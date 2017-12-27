@@ -3,49 +3,49 @@ const axios = require('axios');
 const util = require('util');
 
 const bulk_create_doc = (base_url, index, type, ids, docs) => {
-	// on each scroll batch execute this code
-	let bulk_body = '';
-	for (let i = 0; i < docs.length; i++) {
-		console.log("doc:", docs[i]);
-		// instead of posting one-by-one we're creating bulk payloads
-	  let index_body = {
-				_index: index,
-				_type: type
+  // on each scroll batch execute this code
+  let bulk_body = '';
+  for (let i = 0; i < docs.length; i++) {
+    console.log("doc:", docs[i]);
+    // instead of posting one-by-one we're creating bulk payloads
+    let index_body = {
+        _index: index,
+        _type: type
     };
     if(ids.length > i) {
       index_body['_id'] = ids[i];
     } 
     bulk_body += JSON.stringify({
-			index: index_body
-		}) + '\n';
-		bulk_body += JSON.stringify(docs[i]) + '\n';
-	}	
-	return axios.post(`${base_url}/${index}/${type}/_bulk`, bulk_body)
-	.then(resp => {
-		console.log(`batch status: ${resp.status}, errors: ${resp.data.errors}`);
-		if (resp.data.errors) {
-			for(let item of resp.data.items) {
-				console.log("item:", item);
-			}
-		}
-	});
+      index: index_body
+    }) + '\n';
+    bulk_body += JSON.stringify(docs[i]) + '\n';
+  } 
+  return axios.post(`${base_url}/${index}/${type}/_bulk`, bulk_body)
+  .then(resp => {
+    console.log(`batch status: ${resp.status}, errors: ${resp.data.errors}`);
+    if (resp.data.errors) {
+      for(let item of resp.data.items) {
+        console.log("item:", item);
+      }
+    }
+  });
 };
 
 const get_all_docs = (base_url, index, body, batch_delay, on_batch) => {
-	return new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     let url = `${base_url}/${index}/_search?scroll=1m`;
-    axios({ method: 'GET', url: url, data: body })	
-		.then(resp => {
-			scroll(base_url, resp.data._scroll_id, batch_delay, on_batch, () => {
+    axios({ method: 'GET', url: url, data: body })  
+    .then(resp => {
+      scroll(base_url, resp.data._scroll_id, batch_delay, on_batch, () => {
         console.log("finished getting all docs");
         resolve();
       });
-		})
-		.catch(err => {
-		  console.log("error:", util.inspect(err, false, null));	
+    })
+    .catch(err => {
+      console.log("error:", util.inspect(err, false, null));  
       reject(err);
-		});
-	});
+    });
+  });
 };
 
 const migrate = (from_url, from_index, from_type, to_url, to_index, to_type, transform_doc, scroll_delay) => {
@@ -231,11 +231,11 @@ module.exports = {
   deleteDoc: deleteDoc,
   createDoc: createDoc,
   createDocWithId: createDocWithId,
-	bulk_create_doc: bulk_create_doc,
-	get_all_docs: get_all_docs,
+  bulk_create_doc: bulk_create_doc,
+  get_all_docs: get_all_docs,
   getDoc: getDoc,
   query: query,
-	migrate: migrate,
+  migrate: migrate,
   search: search,
   search_scroll: search_scroll,
   create_index: create_index,
